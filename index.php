@@ -196,8 +196,48 @@ function e(string $value): string
   </main>
 
   <footer class="site-footer">
-    <span>&copy; <?php echo date('Y'); ?> Tiszaszalka SE</span>
-    <span>Készítette: <a href="https://pzoli.com" target="_blank" rel="noopener">pzoli.com</a></span>
+    <div class="footer-newsletter">
+      <div>
+        <p class="eyebrow">Hírlevél</p>
+        <h2>Iratkozz fel híreinkre</h2>
+        <p>Értesülj elsőként a mérkőzésekről, eredményekről és klubhírekről.</p>
+      </div>
+      <form class="newsletter-form" action="#" method="post">
+        <label class="sr-only" for="newsletter-email">E-mail cím</label>
+        <input id="newsletter-email" type="email" placeholder="E-mail" aria-label="E-mail">
+        <button class="button primary" type="submit">Feliratkozás</button>
+      </form>
+    </div>
+
+    <div class="footer-main">
+      <div class="footer-brand">
+        <h3>Tiszaszalka SE</h3>
+        <p>Falusi focicsapat. Kell egy csapat.</p>
+        <p>Hazai pálya: Tiszaszalka</p>
+      </div>
+      <div>
+        <h3>Oldalak</h3>
+        <a href="#hirek">Hírek</a>
+        <a href="#meccsek">Mérkőzések</a>
+        <a href="#tabella">Tabella</a>
+        <a href="#galeria">Galéria</a>
+      </div>
+      <div>
+        <h3>Egyéb</h3>
+        <a href="admin.php">Admin</a>
+        <a href="#kapcsolat">Kapcsolat</a>
+      </div>
+      <div>
+        <h3>Kapcsolat</h3>
+        <p><?php echo e($site['contact']['phone'] ?? ''); ?></p>
+        <p><?php echo e($site['contact']['email'] ?? ''); ?></p>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>&copy; <?php echo date('Y'); ?> Tiszaszalka SE</span>
+      <span>Készítette: <a href="https://pzoli.com" target="_blank" rel="noopener">pzoli.com</a></span>
+    </div>
   </footer>
 </body>
 </html>
