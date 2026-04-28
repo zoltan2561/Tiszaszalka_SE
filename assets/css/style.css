@@ -694,7 +694,8 @@ tbody tr:nth-child(even) td {
   gap: 16px;
 }
 
-.admin-card {
+.admin-card,
+.admin-edit-card {
   padding: 22px;
 }
 
@@ -703,7 +704,8 @@ tbody tr:nth-child(even) td {
   font-size: 1.35rem;
 }
 
-.admin-card label {
+.admin-card label,
+.admin-edit-card label {
   display: grid;
   gap: 6px;
   margin-bottom: 14px;
@@ -713,7 +715,9 @@ tbody tr:nth-child(even) td {
 }
 
 .admin-card input,
-.admin-card textarea {
+.admin-card textarea,
+.admin-edit-card input,
+.admin-edit-card textarea {
   width: 100%;
   min-height: 44px;
   padding: 10px 12px;
@@ -724,7 +728,8 @@ tbody tr:nth-child(even) td {
   font: inherit;
 }
 
-.admin-card textarea {
+.admin-card textarea,
+.admin-edit-card textarea {
   resize: vertical;
 }
 
@@ -742,6 +747,70 @@ tbody tr:nth-child(even) td {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+}
+
+.admin-list-section {
+  padding-top: clamp(38px, 6vw, 64px);
+}
+
+.admin-list,
+.admin-gallery-list {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-edit-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  box-shadow: 0 12px 28px rgba(3, 43, 27, 0.07);
+}
+
+.admin-edit-card.compact {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 0.6fr auto;
+  align-items: end;
+  gap: 12px;
+}
+
+.standing-edit {
+  display: grid;
+  grid-template-columns: 0.45fr minmax(160px, 1.4fr) repeat(5, 0.55fr) auto;
+  align-items: end;
+  gap: 12px;
+}
+
+.admin-gallery-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.gallery-edit img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 14px;
+}
+
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.button.danger {
+  color: #fff;
+  background: #b42318;
+}
+
+.empty-state {
+  margin: 0;
+  padding: 18px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.72);
+  font-weight: 800;
 }
 
 @media (max-width: 860px) {
@@ -774,7 +843,10 @@ tbody tr:nth-child(even) td {
   .news-grid,
   .contact-grid,
   .match-panel,
-  .admin-grid {
+  .admin-grid,
+  .admin-edit-card.compact,
+  .standing-edit,
+  .admin-gallery-list {
     grid-template-columns: 1fr;
   }
 

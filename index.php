@@ -141,7 +141,7 @@ if ($selectedNewsIndex !== null && isset($site['news'][$selectedNewsIndex])) {
               <span class="date"><?php echo e($news['date'] ?? ''); ?></span>
               <h3><?php echo e($news['title'] ?? ''); ?></h3>
               <p><?php echo e($news['body'] ?? ''); ?></p>
-              <a class="share-button" href="<?php echo e($shareUrl); ?>" data-share-url="<?php echo e($newsUrl); ?>" aria-label="Megosztás Facebookon" title="Megosztás Facebookon">f</a>
+              <a class="share-button" href="<?php echo e($shareUrl); ?>" aria-label="Megosztás Facebookon" title="Megosztás Facebookon">f</a>
             </article>
           <?php endforeach; ?>
         <?php else: ?>
@@ -162,7 +162,7 @@ if ($selectedNewsIndex !== null && isset($site['news'][$selectedNewsIndex])) {
               <span class="date">Hamarosan</span>
               <h3><?php echo e($item['title']); ?></h3>
               <p><?php echo e($item['body']); ?></p>
-              <a class="share-button" href="<?php echo e($shareUrl); ?>" data-share-url="<?php echo e($newsUrl); ?>" aria-label="Megosztás Facebookon" title="Megosztás Facebookon">f</a>
+              <a class="share-button" href="<?php echo e($shareUrl); ?>" aria-label="Megosztás Facebookon" title="Megosztás Facebookon">f</a>
             </article>
           <?php endforeach; ?>
         <?php endif; ?>
@@ -360,24 +360,6 @@ if ($selectedNewsIndex !== null && isset($site['news'][$selectedNewsIndex])) {
     const selectedNews = document.querySelector('.selected-news');
     selectedNews?.scrollIntoView({ block: 'center' });
 
-    document.querySelectorAll('.share-button').forEach((button) => {
-      button.addEventListener('click', (event) => {
-        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        const shareUrl = button.dataset.shareUrl;
-        if (!isMobile || !shareUrl) return;
-
-        event.preventDefault();
-        const fallbackUrl = button.href;
-        const appUrl = 'fb://facewebmodal/f?href=' + encodeURIComponent(fallbackUrl);
-        window.location.href = appUrl;
-
-        window.setTimeout(() => {
-          if (!document.hidden) {
-            window.location.href = fallbackUrl;
-          }
-        }, 900);
-      });
-    });
   </script>
 </body>
 </html>
