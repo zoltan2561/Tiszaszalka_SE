@@ -1,3 +1,28 @@
+<?php
+$dataFile = __DIR__ . '/data/site.json';
+$site = [
+  'news' => [],
+  'matches' => [],
+  'standings' => [],
+  'gallery' => [],
+  'contact' => [
+    'email' => 'info@tiszaszalkase.hu',
+    'phone' => '+36 -- --- ----',
+  ],
+];
+
+if (is_file($dataFile)) {
+  $decoded = json_decode((string) file_get_contents($dataFile), true);
+  if (is_array($decoded)) {
+    $site = array_replace_recursive($site, $decoded);
+  }
+}
+
+function e(string $value): string
+{
+  return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+}
+?>
 <!doctype html>
 <html lang="hu">
 <head>
@@ -23,6 +48,7 @@
       <a href="#tabella">Tabella</a>
       <a href="#galeria">Galéria</a>
       <a href="#kapcsolat">Kapcsolat</a>
+      <a href="admin.php">Admin</a>
     </nav>
   </header>
 
@@ -43,41 +69,30 @@
     </section>
 
     <section class="quick-info" aria-label="Gyors információk">
-      <div>
-        <span class="label">Szezon</span>
-        <strong>2026/2027</strong>
-      </div>
-      <div>
-        <span class="label">Hazai pálya</span>
-        <strong>Tiszaszalka</strong>
-      </div>
-      <div>
-        <span class="label">Jelmondat</span>
-        <strong>Kell egy csapat</strong>
-      </div>
+      <div><span class="label">Szezon</span><strong>2026/2027</strong></div>
+      <div><span class="label">Hazai pálya</span><strong>Tiszaszalka</strong></div>
+      <div><span class="label">Jelmondat</span><strong>Kell egy csapat</strong></div>
     </section>
 
     <section id="hirek" class="section">
       <div class="section-heading">
-        <p class="eyebrow">Frissítésre vár</p>
+        <p class="eyebrow">Klubélet</p>
         <h2>Hírek</h2>
       </div>
       <div class="news-grid">
-        <article class="card">
-          <span class="date">Hamarosan</span>
-          <h3>Első hír címe</h3>
-          <p>Ide kerülhetnek a csapat hírei, közleményei, igazolások vagy mérkőzésbeszámolók.</p>
-        </article>
-        <article class="card">
-          <span class="date">Hamarosan</span>
-          <h3>Edzés és program</h3>
-          <p>Rövid bejegyzésekhez, időpontokhoz és eseményekhez készült hely.</p>
-        </article>
-        <article class="card">
-          <span class="date">Hamarosan</span>
-          <h3>Közösségi hírek</h3>
-          <p>Szurkolói információk, támogatók és helyi események jelenhetnek meg itt.</p>
-        </article>
+        <?php if (!empty($site['news'])): ?>
+          <?php foreach ($site['news'] as $news): ?>
+            <article class="card">
+              <span class="date"><?php echo e($news['date'] ?? ''); ?></span>
+              <h3><?php echo e($news['title'] ?? ''); ?></h3>
+              <p><?php echo e($news['body'] ?? ''); ?></p>
+            </article>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <article class="card"><span class="date">Hamarosan</span><h3>Első hír címe</h3><p>Ide kerülhetnek a csapat hírei, közleményei, igazolások vagy mérkőzésbeszámolók.</p></article>
+          <article class="card"><span class="date">Hamarosan</span><h3>Edzés és program</h3><p>Rövid bejegyzésekhez, időpontokhoz és eseményekhez készült hely.</p></article>
+          <article class="card"><span class="date">Hamarosan</span><h3>Közösségi hírek</h3><p>Szurkolói információk, támogatók és helyi események jelenhetnek meg itt.</p></article>
+        <?php endif; ?>
       </div>
     </section>
 
@@ -89,33 +104,26 @@
       <div class="match-panel">
         <div class="next-match">
           <span class="label">Következő mérkőzés</span>
-          <h3>Tiszaszalka SE - Ellenfél</h3>
-          <p>Dátum, időpont és helyszín később kerül feltöltésre.</p>
+          <?php $nextMatch = $site['matches'][0] ?? null; ?>
+          <h3><?php echo e($nextMatch['teams'] ?? 'Tiszaszalka SE - Ellenfél'); ?></h3>
+          <p><?php echo e($nextMatch['date'] ?? 'Dátum, időpont és helyszín később kerül feltöltésre.'); ?></p>
         </div>
         <table>
-          <thead>
-            <tr>
-              <th>Dátum</th>
-              <th>Mérkőzés</th>
-              <th>Eredmény</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Dátum</th><th>Mérkőzés</th><th>Eredmény</th></tr></thead>
           <tbody>
-            <tr>
-              <td>--</td>
-              <td>Tiszaszalka SE - Ellenfél</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td>--</td>
-              <td>Ellenfél - Tiszaszalka SE</td>
-              <td>-</td>
-            </tr>
-            <tr>
-              <td>--</td>
-              <td>Tiszaszalka SE - Ellenfél</td>
-              <td>-</td>
-            </tr>
+            <?php if (!empty($site['matches'])): ?>
+              <?php foreach ($site['matches'] as $match): ?>
+                <tr>
+                  <td><?php echo e($match['date'] ?? ''); ?></td>
+                  <td><?php echo e($match['teams'] ?? ''); ?></td>
+                  <td><?php echo e($match['result'] ?? '-'); ?></td>
+                </tr>
+              <?php endforeach; ?>
+            <?php else: ?>
+              <tr><td>--</td><td>Tiszaszalka SE - Ellenfél</td><td>-</td></tr>
+              <tr><td>--</td><td>Ellenfél - Tiszaszalka SE</td><td>-</td></tr>
+              <tr><td>--</td><td>Tiszaszalka SE - Ellenfél</td><td>-</td></tr>
+            <?php endif; ?>
           </tbody>
         </table>
       </div>
@@ -128,45 +136,25 @@
       </div>
       <div class="table-wrap">
         <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Csapat</th>
-              <th>M</th>
-              <th>Gy</th>
-              <th>D</th>
-              <th>V</th>
-              <th>P</th>
-            </tr>
-          </thead>
+          <thead><tr><th>#</th><th>Csapat</th><th>M</th><th>Gy</th><th>D</th><th>V</th><th>P</th></tr></thead>
           <tbody>
-            <tr>
-              <td>1.</td>
-              <td>Tiszaszalka SE</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-            </tr>
-            <tr>
-              <td>2.</td>
-              <td>Ellenfél</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-            </tr>
-            <tr>
-              <td>3.</td>
-              <td>Ellenfél</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-              <td>0</td>
-            </tr>
+            <?php if (!empty($site['standings'])): ?>
+              <?php foreach ($site['standings'] as $row): ?>
+                <tr>
+                  <td><?php echo e($row['position'] ?? ''); ?></td>
+                  <td><?php echo e($row['team'] ?? ''); ?></td>
+                  <td><?php echo e($row['played'] ?? '0'); ?></td>
+                  <td><?php echo e($row['won'] ?? '0'); ?></td>
+                  <td><?php echo e($row['drawn'] ?? '0'); ?></td>
+                  <td><?php echo e($row['lost'] ?? '0'); ?></td>
+                  <td><?php echo e($row['points'] ?? '0'); ?></td>
+                </tr>
+              <?php endforeach; ?>
+            <?php else: ?>
+              <tr><td>1.</td><td>Tiszaszalka SE</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+              <tr><td>2.</td><td>Ellenfél</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+              <tr><td>3.</td><td>Ellenfél</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+            <?php endif; ?>
           </tbody>
         </table>
       </div>
@@ -178,10 +166,19 @@
         <h2>Galéria</h2>
       </div>
       <div class="gallery-grid">
-        <div class="photo-placeholder">Kép helye</div>
-        <div class="photo-placeholder">Kép helye</div>
-        <div class="photo-placeholder">Kép helye</div>
-        <div class="photo-placeholder">Kép helye</div>
+        <?php if (!empty($site['gallery'])): ?>
+          <?php foreach ($site['gallery'] as $photo): ?>
+            <figure class="gallery-photo">
+              <img src="<?php echo e($photo['path'] ?? ''); ?>" alt="<?php echo e($photo['caption'] ?? 'Tiszaszalka SE kép'); ?>">
+              <?php if (!empty($photo['caption'])): ?><figcaption><?php echo e($photo['caption']); ?></figcaption><?php endif; ?>
+            </figure>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <div class="photo-placeholder">Kép helye</div>
+          <div class="photo-placeholder">Kép helye</div>
+          <div class="photo-placeholder">Kép helye</div>
+          <div class="photo-placeholder">Kép helye</div>
+        <?php endif; ?>
       </div>
     </section>
 
@@ -191,25 +188,16 @@
         <h2>Kapcsolat</h2>
       </div>
       <div class="contact-grid">
-        <div>
-          <span class="label">Klub</span>
-          <strong>Tiszaszalka SE</strong>
-        </div>
-        <div>
-          <span class="label">Email</span>
-          <strong>info@tiszaszalkase.hu</strong>
-        </div>
-        <div>
-          <span class="label">Telefon</span>
-          <strong>+36 -- --- ----</strong>
-        </div>
+        <div><span class="label">Klub</span><strong>Tiszaszalka SE</strong></div>
+        <div><span class="label">Email</span><strong><?php echo e($site['contact']['email'] ?? ''); ?></strong></div>
+        <div><span class="label">Telefon</span><strong><?php echo e($site['contact']['phone'] ?? ''); ?></strong></div>
       </div>
     </section>
   </main>
 
   <footer class="site-footer">
     <span>&copy; <?php echo date('Y'); ?> Tiszaszalka SE</span>
-    <span>Kell egy csapat</span>
+    <span>Készítette: <a href="https://pzoli.com" target="_blank" rel="noopener">pzoli.com</a></span>
   </footer>
 </body>
 </html>

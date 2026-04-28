@@ -167,6 +167,11 @@ h3 {
   border: 1px solid rgba(255, 255, 255, 0.48);
 }
 
+.button.secondary.dark {
+  color: var(--green-900);
+  border-color: var(--line);
+}
+
 .hero-logo {
   margin: 0;
   justify-self: end;
@@ -322,6 +327,28 @@ tr:last-child td {
     var(--paper);
 }
 
+.gallery-photo {
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  box-shadow: 0 12px 30px rgba(21, 35, 28, 0.07);
+}
+
+.gallery-photo img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.gallery-photo figcaption {
+  padding: 12px 14px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
 .contact {
   padding-bottom: clamp(56px, 8vw, 92px);
 }
@@ -333,6 +360,103 @@ tr:last-child td {
   padding: 24px 0 34px;
   color: var(--muted);
   border-top: 1px solid var(--line);
+}
+
+.site-footer a {
+  color: var(--green-800);
+  font-weight: 800;
+}
+
+.admin-page {
+  width: min(1160px, calc(100% - 36px));
+  margin: 0 auto;
+  padding: clamp(36px, 6vw, 70px) 0;
+}
+
+.admin-hero {
+  margin-bottom: 28px;
+}
+
+.admin-hero h1 {
+  margin-bottom: 12px;
+  color: var(--green-900);
+  font-size: clamp(2.4rem, 6vw, 4.8rem);
+}
+
+.admin-hero p {
+  max-width: 720px;
+  color: var(--muted);
+}
+
+.notice {
+  display: inline-flex;
+  margin-top: 12px;
+  padding: 10px 14px;
+  border: 1px solid #b9dca7;
+  border-radius: 6px;
+  color: var(--green-900);
+  background: var(--green-100);
+  font-weight: 800;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.admin-card {
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  box-shadow: 0 12px 30px rgba(21, 35, 28, 0.07);
+}
+
+.admin-card h2 {
+  margin-bottom: 18px;
+  font-size: 1.35rem;
+}
+
+.admin-card label {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+  color: var(--green-900);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.admin-card input,
+.admin-card textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  background: #fff;
+  font: inherit;
+}
+
+.admin-card textarea {
+  resize: vertical;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 0.45fr 1fr;
+  gap: 12px;
+}
+
+.form-row.six {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.clear-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 @media (max-width: 860px) {
@@ -360,7 +484,8 @@ tr:last-child td {
   .quick-info,
   .news-grid,
   .contact-grid,
-  .match-panel {
+  .match-panel,
+  .admin-grid {
     grid-template-columns: 1fr;
   }
 
@@ -388,5 +513,10 @@ tr:last-child td {
 
   .site-footer {
     flex-direction: column;
+  }
+
+  .form-row,
+  .form-row.six {
+    grid-template-columns: 1fr;
   }
 }
