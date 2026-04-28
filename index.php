@@ -43,18 +43,16 @@ $pageUrl = $scheme . '://' . $host . $path;
 $basePath = rtrim(str_replace('\\', '/', dirname($path)), '/');
 $basePath = ($basePath === '' || $basePath === '.') ? '' : $basePath;
 $ogImage = $scheme . '://' . $host . $basePath . '/assets/img/tiszaszalka-se-logo.jpg';
-$selectedNewsId = (string) ($_GET['news'] ?? '');
-$currentUrl = $selectedNewsId !== '' ? $pageUrl . '?news=' . rawurlencode($selectedNewsId) : $pageUrl;
+$selectedNewsNumber = isset($_GET['hir']) ? max(1, (int) $_GET['hir']) : 0;
+$selectedNewsIndex = $selectedNewsNumber > 0 ? $selectedNewsNumber - 1 : null;
+$currentUrl = $selectedNewsNumber > 0 ? $pageUrl . '?hir=' . $selectedNewsNumber : $pageUrl;
 $metaTitle = 'Tiszaszalka SE';
 $metaDescription = 'Tiszaszalka SE falusi focicsapat hivatalos weboldala.';
 
-foreach ($site['news'] as $index => $news) {
-  $newsId = 'hir-' . ($index + 1);
-  if ($selectedNewsId === $newsId) {
-    $metaTitle = ($news['title'] ?? 'Hír') . ' - Tiszaszalka SE';
-    $metaDescription = excerpt((string) ($news['body'] ?? $metaDescription));
-    break;
-  }
+if ($selectedNewsIndex !== null && isset($site['news'][$selectedNewsIndex])) {
+  $selectedNews = $site['news'][$selectedNewsIndex];
+  $metaTitle = (string) ($selectedNews['title'] ?? 'Hír');
+  $metaDescription = excerpt((string) ($selectedNews['body'] ?? $metaDescription));
 }
 ?>
 <!doctype html>
@@ -64,14 +62,22 @@ foreach ($site['news'] as $index => $news) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?php echo e($metaTitle); ?></title>
   <meta name="description" content="<?php echo e($metaDescription); ?>">
+  <link rel="canonical" href="<?php echo e($currentUrl); ?>">
   <meta property="og:type" content="website">
+  <meta property="og:locale" content="hu_HU">
   <meta property="og:site_name" content="Tiszaszalka SE">
   <meta property="og:title" content="<?php echo e($metaTitle); ?>">
   <meta property="og:description" content="<?php echo e($metaDescription); ?>">
   <meta property="og:url" content="<?php echo e($currentUrl); ?>">
   <meta property="og:image" content="<?php echo e($ogImage); ?>">
+  <meta property="og:image:secure_url" content="<?php echo e($ogImage); ?>">
+  <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="1280">
   <meta property="og:image:height" content="720">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<?php echo e($metaTitle); ?>">
+  <meta name="twitter:description" content="<?php echo e($metaDescription); ?>">
+  <meta name="twitter:image" content="<?php echo e($ogImage); ?>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -126,11 +132,12 @@ foreach ($site['news'] as $index => $news) {
         <?php if (!empty($site['news'])): ?>
           <?php foreach ($site['news'] as $index => $news): ?>
             <?php
-              $newsId = 'hir-' . ($index + 1);
-              $newsUrl = $pageUrl . '?news=' . rawurlencode($newsId) . '#' . $newsId;
+              $newsNumber = $index + 1;
+              $newsId = 'hir-' . $newsNumber;
+              $newsUrl = $pageUrl . '?hir=' . $newsNumber;
               $shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode($newsUrl);
             ?>
-            <article id="<?php echo e($newsId); ?>" class="card">
+            <article id="<?php echo e($newsId); ?>" class="card<?php echo $selectedNewsNumber === $newsNumber ? ' selected-news' : ''; ?>">
               <span class="date"><?php echo e($news['date'] ?? ''); ?></span>
               <h3><?php echo e($news['title'] ?? ''); ?></h3>
               <p><?php echo e($news['body'] ?? ''); ?></p>
@@ -147,10 +154,11 @@ foreach ($site['news'] as $index => $news) {
           ?>
           <?php foreach ($fallbackNews as $item): ?>
             <?php
-              $newsUrl = $pageUrl . '?news=' . rawurlencode($item['id']) . '#' . $item['id'];
+              $newsNumber = (int) str_replace('hir-', '', $item['id']);
+              $newsUrl = $pageUrl . '?hir=' . $newsNumber;
               $shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode($newsUrl);
             ?>
-            <article id="<?php echo e($item['id']); ?>" class="card">
+            <article id="<?php echo e($item['id']); ?>" class="card<?php echo $selectedNewsNumber === $newsNumber ? ' selected-news' : ''; ?>">
               <span class="date">Hamarosan</span>
               <h3><?php echo e($item['title']); ?></h3>
               <p><?php echo e($item['body']); ?></p>
@@ -348,6 +356,9 @@ foreach ($site['news'] as $index => $news) {
       if (event.key === 'ArrowLeft') moveModal(-1);
       if (event.key === 'ArrowRight') moveModal(1);
     });
+
+    const selectedNews = document.querySelector('.selected-news');
+    selectedNews?.scrollIntoView({ block: 'center' });
   </script>
 </body>
 </html>
