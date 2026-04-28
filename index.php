@@ -135,13 +135,13 @@ if ($selectedNewsIndex !== null && isset($site['news'][$selectedNewsIndex])) {
               $newsNumber = $index + 1;
               $newsId = 'hir-' . $newsNumber;
               $newsUrl = $pageUrl . '?hir=' . $newsNumber;
-              $shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode($newsUrl);
+              $shareUrl = 'https://www.facebook.com/sharer.php?u=' . rawurlencode($newsUrl);
             ?>
             <article id="<?php echo e($newsId); ?>" class="card<?php echo $selectedNewsNumber === $newsNumber ? ' selected-news' : ''; ?>">
               <span class="date"><?php echo e($news['date'] ?? ''); ?></span>
               <h3><?php echo e($news['title'] ?? ''); ?></h3>
               <p><?php echo e($news['body'] ?? ''); ?></p>
-              <a class="share-button" href="<?php echo e($shareUrl); ?>" target="_blank" rel="noopener">Facebook megosztás</a>
+              <a class="share-button" href="<?php echo e($shareUrl); ?>" aria-label="Megosztás Facebookon" title="Megosztás Facebookon">f</a>
             </article>
           <?php endforeach; ?>
         <?php else: ?>
@@ -156,13 +156,13 @@ if ($selectedNewsIndex !== null && isset($site['news'][$selectedNewsIndex])) {
             <?php
               $newsNumber = (int) str_replace('hir-', '', $item['id']);
               $newsUrl = $pageUrl . '?hir=' . $newsNumber;
-              $shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode($newsUrl);
+              $shareUrl = 'https://www.facebook.com/sharer.php?u=' . rawurlencode($newsUrl);
             ?>
             <article id="<?php echo e($item['id']); ?>" class="card<?php echo $selectedNewsNumber === $newsNumber ? ' selected-news' : ''; ?>">
               <span class="date">Hamarosan</span>
               <h3><?php echo e($item['title']); ?></h3>
               <p><?php echo e($item['body']); ?></p>
-              <a class="share-button" href="<?php echo e($shareUrl); ?>" target="_blank" rel="noopener">Facebook megosztás</a>
+              <a class="share-button" href="<?php echo e($shareUrl); ?>" aria-label="Megosztás Facebookon" title="Megosztás Facebookon">f</a>
             </article>
           <?php endforeach; ?>
         <?php endif; ?>
