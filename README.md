@@ -19,4 +19,4 @@ Publikus oldal: `http://localhost:8000`
 
 Admin felulet: `http://localhost:8000/admin.php`
 
-Megjegyzes: az admin felulet jelenleg nincs jelszoval vedve. Eles tarhelyen ezt kulon be kell allitani.
+Admin jelszo: `tiszaadmin`

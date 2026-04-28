@@ -1,10 +1,63 @@
 {
-  "news": [],
-  "matches": [],
-  "standings": [],
-  "gallery": [],
-  "contact": {
-    "email": "info@tiszaszalkase.hu",
-    "phone": "+36 -- --- ----"
-  }
+    "news": [
+        {
+            "date": "2026.04.28.",
+            "title": "Elkészült a weboldalunk",
+            "body": "Elkészült a hivatalos weboldalunk!\r\nTámogass minket egy megosztással."
+        }
+    ],
+    "matches": [
+        {
+            "date": "2025.05.03. 16:00",
+            "teams": "Tiszaszalka SE - Barabás SE",
+            "result": "2:1"
+        }
+    ],
+    "standings": [
+        {
+            "position": "1",
+            "team": "Barabás",
+            "played": "2",
+            "won": "2",
+            "drawn": "0",
+            "lost": "0",
+            "points": "6"
+        },
+        {
+            "position": "2",
+            "team": "Tiszaszalka",
+            "played": "2",
+            "won": "1",
+            "drawn": "0",
+            "lost": "1",
+            "points": "3"
+        },
+        {
+            "position": "3",
+            "team": "Lónya",
+            "played": "3",
+            "won": "0",
+            "drawn": "0",
+            "lost": "3",
+            "points": "0"
+        }
+    ],
+    "gallery": [
+        {
+            "path": "assets/img/gallery/kep-20260428-155055-d05dcd.png",
+            "caption": "Teszt kép"
+        },
+        {
+            "path": "assets/img/gallery/kep-20260428-160915-04dfb3.png",
+            "caption": "Teszt kép 2"
+        },
+        {
+            "path": "assets/img/gallery/kep-20260428-160925-c81c44.jpg",
+            "caption": "Teszt kép 3"
+        }
+    ],
+    "contact": {
+        "email": "info@tiszaszalkase.hu",
+        "phone": "+36 -- --- ----"
+    }
 }

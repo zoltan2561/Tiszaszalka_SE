@@ -1,4 +1,7 @@
 <?php
+session_start();
+
+$adminPassword = 'tiszaadmin';
 $dataDir = __DIR__ . '/data';
 $uploadDir = __DIR__ . '/assets/img/gallery';
 $dataFile = $dataDir . '/site.json';
@@ -48,8 +51,28 @@ function save_site(string $dataFile, array $site): void
 }
 
 $message = '';
+$loginError = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (isset($_GET['logout'])) {
+  $_SESSION = [];
+  session_destroy();
+  header('Location: admin.php');
+  exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'login') {
+  if (hash_equals($adminPassword, (string) ($_POST['password'] ?? ''))) {
+    $_SESSION['admin_logged_in'] = true;
+    header('Location: admin.php');
+    exit;
+  }
+
+  $loginError = 'Hibás jelszó.';
+}
+
+$isLoggedIn = !empty($_SESSION['admin_logged_in']);
+
+if ($isLoggedIn && $_SERVER['REQUEST_METHOD'] === 'POST') {
   $action = $_POST['action'] ?? '';
 
   if ($action === 'contact') {
@@ -117,7 +140,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
   }
 
-  save_site($dataFile, $site);
+  if ($action !== 'login') {
+    save_site($dataFile, $site);
+  }
 }
 ?>
 <!doctype html>
@@ -137,80 +162,96 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <img src="assets/img/tiszaszalka-se-logo.jpg" alt="Tiszaszalka SE logó">
       <span>Tiszaszalka SE Admin</span>
     </a>
-    <nav class="main-nav"><a href="index.php">Weboldal</a></nav>
+    <nav class="main-nav">
+      <a href="index.php">Weboldal</a>
+      <?php if ($isLoggedIn): ?><a href="admin.php?logout=1">Kilépés</a><?php endif; ?>
+    </nav>
   </header>
 
   <main class="admin-page">
-    <section class="admin-hero">
-      <p class="eyebrow">Adatfelvitel</p>
-      <h1>Admin felület</h1>
-      <p>Egyszerű kezelőfelület hírekhez, meccsekhez, tabellához, képekhez és elérhetőséghez.</p>
-      <?php if ($message !== ''): ?><div class="notice"><?php echo e($message); ?></div><?php endif; ?>
-    </section>
-
-    <section class="admin-grid">
-      <form class="admin-card" method="post">
-        <input type="hidden" name="action" value="news">
-        <h2>Hír hozzáadása</h2>
-        <label>Dátum<input name="date" type="text" placeholder="2026.04.28."></label>
-        <label>Cím<input name="title" type="text" required></label>
-        <label>Szöveg<textarea name="body" rows="5" required></textarea></label>
-        <button class="button primary" type="submit">Mentés</button>
-      </form>
-
-      <form class="admin-card" method="post">
-        <input type="hidden" name="action" value="match">
-        <h2>Mérkőzés hozzáadása</h2>
-        <label>Dátum<input name="date" type="text" placeholder="2026.05.03. 16:00"></label>
-        <label>Mérkőzés<input name="teams" type="text" placeholder="Tiszaszalka SE - Ellenfél" required></label>
-        <label>Eredmény<input name="result" type="text" placeholder="-"></label>
-        <button class="button primary" type="submit">Mentés</button>
-      </form>
-
-      <form class="admin-card" method="post">
-        <input type="hidden" name="action" value="standing">
-        <h2>Tabella sor</h2>
-        <div class="form-row">
-          <label>Hely<input name="position" type="text" placeholder="1."></label>
-          <label>Csapat<input name="team" type="text" required></label>
-        </div>
-        <div class="form-row six">
-          <label>M<input name="played" type="number" min="0" value="0"></label>
-          <label>Gy<input name="won" type="number" min="0" value="0"></label>
-          <label>D<input name="drawn" type="number" min="0" value="0"></label>
-          <label>V<input name="lost" type="number" min="0" value="0"></label>
-          <label>P<input name="points" type="number" min="0" value="0"></label>
-        </div>
-        <button class="button primary" type="submit">Mentés</button>
-      </form>
-
-      <form class="admin-card" method="post" enctype="multipart/form-data">
-        <input type="hidden" name="action" value="gallery">
-        <h2>Galéria kép</h2>
-        <label>Képaláírás<input name="caption" type="text"></label>
-        <label>Kép<input name="image" type="file" accept="image/jpeg,image/png,image/webp" required></label>
-        <button class="button primary" type="submit">Feltöltés</button>
-      </form>
-
-      <form class="admin-card" method="post">
-        <input type="hidden" name="action" value="contact">
-        <h2>Kapcsolat</h2>
-        <label>Email<input name="email" type="email" value="<?php echo e($site['contact']['email'] ?? ''); ?>"></label>
-        <label>Telefon<input name="phone" type="text" value="<?php echo e($site['contact']['phone'] ?? ''); ?>"></label>
-        <button class="button primary" type="submit">Mentés</button>
-      </form>
-
-      <div class="admin-card">
-        <h2>Adatok ürítése</h2>
-        <form method="post" class="clear-actions">
-          <input type="hidden" name="action" value="clear">
-          <button name="section" value="news" class="button secondary dark" type="submit">Hírek ürítése</button>
-          <button name="section" value="matches" class="button secondary dark" type="submit">Meccsek ürítése</button>
-          <button name="section" value="standings" class="button secondary dark" type="submit">Tabella ürítése</button>
-          <button name="section" value="gallery" class="button secondary dark" type="submit">Galéria ürítése</button>
+    <?php if (!$isLoggedIn): ?>
+      <section class="admin-login">
+        <form class="admin-card login-card" method="post">
+          <input type="hidden" name="action" value="login">
+          <p class="eyebrow">Belépés</p>
+          <h1>Admin felület</h1>
+          <label>Jelszó<input name="password" type="password" required autofocus></label>
+          <?php if ($loginError !== ''): ?><div class="notice error"><?php echo e($loginError); ?></div><?php endif; ?>
+          <button class="button primary" type="submit">Belépés</button>
         </form>
-      </div>
-    </section>
+      </section>
+    <?php else: ?>
+      <section class="admin-hero">
+        <p class="eyebrow">Adatfelvitel</p>
+        <h1>Admin felület</h1>
+        <p>Egyszerű kezelőfelület hírekhez, meccsekhez, tabellához, képekhez és elérhetőséghez.</p>
+        <?php if ($message !== ''): ?><div class="notice"><?php echo e($message); ?></div><?php endif; ?>
+      </section>
+
+      <section class="admin-grid">
+        <form class="admin-card" method="post">
+          <input type="hidden" name="action" value="news">
+          <h2>Hír hozzáadása</h2>
+          <label>Dátum<input name="date" type="text" placeholder="2026.04.28."></label>
+          <label>Cím<input name="title" type="text" required></label>
+          <label>Szöveg<textarea name="body" rows="5" required></textarea></label>
+          <button class="button primary" type="submit">Mentés</button>
+        </form>
+
+        <form class="admin-card" method="post">
+          <input type="hidden" name="action" value="match">
+          <h2>Mérkőzés hozzáadása</h2>
+          <label>Dátum<input name="date" type="text" placeholder="2026.05.03. 16:00"></label>
+          <label>Mérkőzés<input name="teams" type="text" placeholder="Tiszaszalka SE - Ellenfél" required></label>
+          <label>Eredmény<input name="result" type="text" placeholder="-"></label>
+          <button class="button primary" type="submit">Mentés</button>
+        </form>
+
+        <form class="admin-card" method="post">
+          <input type="hidden" name="action" value="standing">
+          <h2>Tabella sor</h2>
+          <div class="form-row">
+            <label>Hely<input name="position" type="text" placeholder="1."></label>
+            <label>Csapat<input name="team" type="text" required></label>
+          </div>
+          <div class="form-row six">
+            <label>M<input name="played" type="number" min="0" value="0"></label>
+            <label>Gy<input name="won" type="number" min="0" value="0"></label>
+            <label>D<input name="drawn" type="number" min="0" value="0"></label>
+            <label>V<input name="lost" type="number" min="0" value="0"></label>
+            <label>P<input name="points" type="number" min="0" value="0"></label>
+          </div>
+          <button class="button primary" type="submit">Mentés</button>
+        </form>
+
+        <form class="admin-card" method="post" enctype="multipart/form-data">
+          <input type="hidden" name="action" value="gallery">
+          <h2>Galéria kép</h2>
+          <label>Képaláírás<input name="caption" type="text"></label>
+          <label>Kép<input name="image" type="file" accept="image/jpeg,image/png,image/webp" required></label>
+          <button class="button primary" type="submit">Feltöltés</button>
+        </form>
+
+        <form class="admin-card" method="post">
+          <input type="hidden" name="action" value="contact">
+          <h2>Kapcsolat</h2>
+          <label>Email<input name="email" type="email" value="<?php echo e($site['contact']['email'] ?? ''); ?>"></label>
+          <label>Telefon<input name="phone" type="text" value="<?php echo e($site['contact']['phone'] ?? ''); ?>"></label>
+          <button class="button primary" type="submit">Mentés</button>
+        </form>
+
+        <div class="admin-card">
+          <h2>Adatok ürítése</h2>
+          <form method="post" class="clear-actions">
+            <input type="hidden" name="action" value="clear">
+            <button name="section" value="news" class="button secondary dark" type="submit">Hírek ürítése</button>
+            <button name="section" value="matches" class="button secondary dark" type="submit">Meccsek ürítése</button>
+            <button name="section" value="standings" class="button secondary dark" type="submit">Tabella ürítése</button>
+            <button name="section" value="gallery" class="button secondary dark" type="submit">Galéria ürítése</button>
+          </form>
+        </div>
+      </section>
+    <?php endif; ?>
   </main>
 </body>
 </html>
