@@ -10,6 +10,12 @@ $site = [
     'phone' => '+36 -- --- ----',
   ],
 ];
+$mlszSourceUrl = 'https://adatbank.mlsz.hu/league/65/16/31845/21.html';
+$mlszCacheFile = __DIR__ . '/data/mlsz-cache.json';
+$mlszTeamName = 'TISZASZALKA SE';
+$mlszCacheTtl = 1800;
+$documentsDir = __DIR__ . '/assets/pdf';
+$documentsPath = 'assets/pdf';
 
 if (is_file($dataFile)) {
   $decoded = json_decode((string) file_get_contents($dataFile), true);
@@ -35,7 +41,286 @@ function excerpt(string $value, int $length = 150): string
   return $text;
 }
 
+function format_file_size(int $bytes): string
+{
+  if ($bytes >= 1048576) {
+    return number_format($bytes / 1048576, 1, ',', ' ') . ' MB';
+  }
+
+  return max(1, (int) ceil($bytes / 1024)) . ' KB';
+}
+
+function document_title(string $filename): string
+{
+  $name = pathinfo($filename, PATHINFO_FILENAME);
+  $name = str_replace(['_', '-'], ' ', $name);
+  $name = trim(preg_replace('/\s+/', ' ', $name));
+
+  return $name !== '' ? $name : $filename;
+}
+
+function load_documents(string $documentsDir, string $documentsPath): array
+{
+  if (!is_dir($documentsDir)) {
+    return [];
+  }
+
+  $documents = [];
+  foreach (glob($documentsDir . '/*.pdf') ?: [] as $file) {
+    if (!is_file($file)) {
+      continue;
+    }
+
+    $filename = basename($file);
+    $documents[] = [
+      'title' => document_title($filename),
+      'filename' => $filename,
+      'url' => $documentsPath . '/' . rawurlencode($filename),
+      'size' => format_file_size((int) filesize($file)),
+    ];
+  }
+
+  usort($documents, static fn(array $a, array $b): int => strnatcasecmp($a['title'], $b['title']));
+
+  return $documents;
+}
+
+function clean_text(string $value): string
+{
+  $value = html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+  if (strpos($value, 'Ã') !== false) {
+    $value = strtr($value, [
+      "\xc3\x83\xc2\x81" => 'Á', "\xc3\x83\xc2\x89" => 'É', "\xc3\x83\xc2\x8d" => 'Í',
+      "\xc3\x83\xe2\x80\x9c" => 'Ó', "\xc3\x83\xe2\x80\x93" => 'Ö', "\xc3\x83\xc5\xa1" => 'Ú', "\xc3\x83\xc5\x93" => 'Ü',
+      "\xc3\x83\xc2\xa1" => 'á', "\xc3\x83\xc2\xa9" => 'é', "\xc3\x83\xc2\xad" => 'í',
+      "\xc3\x83\xc2\xb3" => 'ó', "\xc3\x83\xc2\xb6" => 'ö', "\xc3\x83\xc2\xba" => 'ú', "\xc3\x83\xc2\xbc" => 'ü',
+      "\xc3\x85\xc2\x90" => 'Ő', "\xc3\x85\xe2\x80\x98" => 'ő', "\xc3\x85\xc2\xb0" => 'Ű', "\xc3\x85\xc2\xb1" => 'ű',
+    ]);
+  }
+  $value = str_replace("\xc2\xa0", ' ', $value);
+  return trim(preg_replace('/\s+/u', ' ', $value));
+}
+
+function fetch_url(string $url): string
+{
+  $context = stream_context_create([
+    'http' => [
+      'timeout' => 8,
+      'header' => "User-Agent: TiszaszalkaSE/1.0\r\n",
+    ],
+    'ssl' => [
+      'verify_peer' => true,
+      'verify_peer_name' => true,
+    ],
+  ]);
+
+  $html = @file_get_contents($url, false, $context);
+  if (is_string($html) && $html !== '') {
+    return $html;
+  }
+
+  if (function_exists('curl_init')) {
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_FOLLOWLOCATION => true,
+      CURLOPT_CONNECTTIMEOUT => 6,
+      CURLOPT_TIMEOUT => 10,
+      CURLOPT_USERAGENT => 'TiszaszalkaSE/1.0',
+    ]);
+    $html = curl_exec($ch);
+    curl_close($ch);
+    if (is_string($html) && $html !== '') {
+      return $html;
+    }
+  }
+
+  if (stripos(PHP_OS_FAMILY, 'Windows') !== false && function_exists('shell_exec')) {
+    $ps = '$ProgressPreference = "SilentlyContinue"; ' .
+      '$wc = New-Object System.Net.WebClient; ' .
+      '$wc.Headers.Add("User-Agent", "TiszaszalkaSE/1.0"); ' .
+      '$bytes = $wc.DownloadData("' . str_replace('"', '\"', $url) . '"); ' .
+      '[Convert]::ToBase64String($bytes)';
+    $command = 'powershell -NoProfile -ExecutionPolicy Bypass -Command "' . str_replace('"', '\"', $ps) . '"';
+    $encoded = shell_exec($command);
+    if (is_string($encoded) && trim($encoded) !== '') {
+      $html = base64_decode(trim($encoded), true);
+      if (is_string($html) && $html !== '') {
+        return $html;
+      }
+    }
+  }
+
+  return '';
+}
+
+function parse_mlsz_date(string $value): ?DateTimeImmutable
+{
+  if (!preg_match('/(\d{4})\.\s*(\d{2})\.\s*(\d{2})\.\s*(\d{1,2}):(\d{2})/u', $value, $matches)) {
+    return null;
+  }
+
+  return DateTimeImmutable::createFromFormat(
+    '!Y-m-d H:i',
+    sprintf('%04d-%02d-%02d %02d:%02d', $matches[1], $matches[2], $matches[3], $matches[4], $matches[5]),
+    new DateTimeZone('Europe/Budapest')
+  ) ?: null;
+}
+
+function parse_mlsz_page(string $html, int $round): array
+{
+  libxml_use_internal_errors(true);
+  $dom = new DOMDocument();
+  $encodedHtml = iconv('UTF-8', 'HTML-ENTITIES//IGNORE', $html);
+  $dom->loadHTML($encodedHtml !== false ? $encodedHtml : $html);
+  $xpath = new DOMXPath($dom);
+  $matches = [];
+  $standings = [];
+
+  foreach ($xpath->query('//div[contains(concat(" ", normalize-space(@class), " "), " schedule ")]') as $schedule) {
+    $home = clean_text($xpath->evaluate('string(.//*[contains(concat(" ", normalize-space(@class), " "), " home_team ")])', $schedule));
+    $away = clean_text($xpath->evaluate('string(.//*[contains(concat(" ", normalize-space(@class), " "), " away_team ")])', $schedule));
+    $result = clean_text($xpath->evaluate('string(.//*[contains(concat(" ", normalize-space(@class), " "), " result-cont ")])', $schedule));
+    if (!preg_match('/^\d+\s*-\s*\d+$/', $result)) {
+      $result = '-';
+    }
+    $date = clean_text($xpath->evaluate('string(.//*[contains(concat(" ", normalize-space(@class), " "), " team_sorsolas_date ")])', $schedule));
+    $place = clean_text($xpath->evaluate('string(.//*[contains(concat(" ", normalize-space(@class), " "), " team_sorsolas_arena ")])', $schedule));
+
+    if ($home === '' || $away === '' || $date === '') {
+      continue;
+    }
+
+    $matches[] = [
+      'round' => (string) $round,
+      'date' => $date . ($place !== '' ? ', ' . $place : ''),
+      'date_raw' => $date,
+      'timestamp' => parse_mlsz_date($date)?->getTimestamp() ?? 0,
+      'teams' => $home . ' - ' . $away,
+      'result' => $result !== '' ? $result : '-',
+    ];
+  }
+
+  $standingRows = null;
+  foreach ($xpath->query('//table[contains(., "Pontszám") and contains(., "BR.*") and contains(., "TISZASZALKA")]') as $table) {
+    $standingRows = $xpath->query('.//tbody/tr', $table);
+    break;
+  }
+
+  foreach ($standingRows ?? [] as $row) {
+    $cells = [];
+    foreach ($xpath->query('./td', $row) as $cell) {
+      $cells[] = clean_text($cell->textContent);
+    }
+
+    if (count($cells) < 11 || !ctype_digit($cells[0])) {
+      continue;
+    }
+
+    $standings[] = [
+      'position' => $cells[0],
+      'team' => $cells[2] ?? '',
+      'played' => $cells[3] ?? '0',
+      'won' => $cells[4] ?? '0',
+      'drawn' => $cells[5] ?? '0',
+      'lost' => $cells[6] ?? '0',
+      'points' => $cells[10] ?? '0',
+    ];
+  }
+
+  return ['matches' => $matches, 'standings' => $standings];
+}
+
+function load_mlsz_data(string $sourceUrl, string $cacheFile, string $teamName, int $cacheTtl): array
+{
+  if (is_file($cacheFile) && (time() - filemtime($cacheFile)) < $cacheTtl) {
+    $cached = json_decode((string) file_get_contents($cacheFile), true);
+    if (is_array($cached)) {
+      return $cached;
+    }
+  }
+
+  $allMatches = [];
+  $standings = [];
+  $sourceHtml = fetch_url($sourceUrl);
+
+  if ($sourceHtml !== '') {
+    $baseRound = 21;
+    $sourceData = parse_mlsz_page($sourceHtml, $baseRound);
+    $allMatches = array_merge($allMatches, $sourceData['matches']);
+    $standings = $sourceData['standings'];
+
+    for ($round = $baseRound + 1; $round <= 26; $round++) {
+      if ($round === $baseRound) {
+        continue;
+      }
+      $roundUrl = preg_replace('~/\d+\.html$~', '/' . $round . '.html', $sourceUrl);
+      if (!is_string($roundUrl)) {
+        continue;
+      }
+      $html = fetch_url($roundUrl);
+      if ($html === '') {
+        continue;
+      }
+      $roundData = parse_mlsz_page($html, $round);
+      $allMatches = array_merge($allMatches, $roundData['matches']);
+    }
+  }
+
+  $teamMatches = array_values(array_filter($allMatches, static function (array $match) use ($teamName): bool {
+    return stripos($match['teams'] ?? '', $teamName) !== false;
+  }));
+  usort($teamMatches, static fn(array $a, array $b): int => ($a['timestamp'] ?? 0) <=> ($b['timestamp'] ?? 0));
+  $uniqueMatches = [];
+  foreach ($teamMatches as $match) {
+    $key = ($match['date'] ?? '') . '|' . ($match['teams'] ?? '');
+    $uniqueMatches[$key] = $match;
+  }
+  $teamMatches = array_values($uniqueMatches);
+
+  $now = (new DateTimeImmutable('now', new DateTimeZone('Europe/Budapest')))->getTimestamp();
+  $nextMatch = null;
+  foreach ($teamMatches as $match) {
+    if (($match['timestamp'] ?? 0) >= $now) {
+      $nextMatch = $match;
+      break;
+    }
+  }
+
+  $data = [
+    'matches' => array_map(static function (array $match): array {
+      unset($match['timestamp'], $match['date_raw']);
+      return $match;
+    }, array_slice(array_reverse($teamMatches), 0, 8)),
+    'standings' => $standings,
+    'next_match' => $nextMatch ? [
+      'date' => $nextMatch['date'],
+      'teams' => $nextMatch['teams'],
+      'result' => $nextMatch['result'],
+    ] : null,
+    'updated_at' => date('Y-m-d H:i:s'),
+  ];
+
+  if (!empty($data['matches']) || !empty($data['standings'])) {
+    @file_put_contents($cacheFile, json_encode($data, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+  }
+
+  return $data;
+}
+
+$mlszData = load_mlsz_data($mlszSourceUrl, $mlszCacheFile, $mlszTeamName, $mlszCacheTtl);
+if (!empty($mlszData['matches'])) {
+  $site['matches'] = $mlszData['matches'];
+}
+if (!empty($mlszData['standings'])) {
+  $site['standings'] = $mlszData['standings'];
+}
+
 $nextMatch = $site['matches'][0] ?? null;
+if (!empty($mlszData['next_match'])) {
+  $nextMatch = $mlszData['next_match'];
+}
+$documents = load_documents($documentsDir, $documentsPath);
 $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $path = strtok($_SERVER['REQUEST_URI'] ?? '/index.php', '?') ?: '/index.php';
@@ -94,6 +379,7 @@ if ($selectedNewsIndex !== null && isset($site['news'][$selectedNewsIndex])) {
       <a href="#hirek">Hírek</a>
       <a href="#meccsek">Meccsek</a>
       <a href="#tabella">Tabella</a>
+      <a href="#dokumentumok">Dokumentumok</a>
       <a href="#galeria">Galéria</a>
       <a href="#kapcsolat">Kapcsolat</a>
     </nav>
@@ -236,6 +522,31 @@ if ($selectedNewsIndex !== null && isset($site['news'][$selectedNewsIndex])) {
           </tbody>
         </table>
       </div>
+    </section>
+
+    <section id="dokumentumok" class="section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Letöltések</p>
+          <h2>Dokumentumok</h2>
+        </div>
+      </div>
+      <?php if (!empty($documents)): ?>
+        <div class="document-grid">
+          <?php foreach ($documents as $document): ?>
+            <article class="document-card">
+              <div class="document-icon" aria-hidden="true">PDF</div>
+              <div>
+                <h3><?php echo e($document['title']); ?></h3>
+                <p><?php echo e($document['filename']); ?> · <?php echo e($document['size']); ?></p>
+              </div>
+              <a class="button secondary dark" href="<?php echo e($document['url']); ?>" download>Letöltés</a>
+            </article>
+          <?php endforeach; ?>
+        </div>
+      <?php else: ?>
+        <p class="empty-state">A dokumentumok hamarosan felkerülnek.</p>
+      <?php endif; ?>
     </section>
 
     <section id="galeria" class="section">

@@ -44,16 +44,20 @@
     ],
     "gallery": [
         {
-            "path": "assets/img/gallery/kep-20260428-155055-d05dcd.png",
-            "caption": "Teszt kép"
+            "path": "assets/img/gallery/kep-20260429-090139-1d1f6d.jpg",
+            "caption": ""
         },
         {
-            "path": "assets/img/gallery/kep-20260428-160915-04dfb3.png",
-            "caption": "Teszt kép 2"
+            "path": "assets/img/gallery/kep-20260429-090149-b7ad0d.jpg",
+            "caption": ""
         },
         {
-            "path": "assets/img/gallery/kep-20260428-160925-c81c44.jpg",
-            "caption": "Teszt kép 3"
+            "path": "assets/img/gallery/kep-20260429-090153-cb1c1d.jpg",
+            "caption": ""
+        },
+        {
+            "path": "assets/img/gallery/kep-20260429-090158-dd36c0.jpg",
+            "caption": ""
         }
     ],
     "contact": {
