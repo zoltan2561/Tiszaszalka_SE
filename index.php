@@ -43,7 +43,7 @@ function excerpt(string $value, int $length = 150): string
 
 function news_share_url(string $pageUrl, int $newsNumber): string
 {
-  return $pageUrl . '?hir=' . $newsNumber;
+  return rtrim($pageUrl, '/') . '/?hir=' . $newsNumber;
 }
 
 function facebook_share_url(string $newsUrl): string
@@ -332,8 +332,27 @@ function load_mlsz_data(string $sourceUrl, string $cacheFile, string $teamName, 
 
   return $data;
 }
+$isFacebookCrawler = (
+  stripos($_SERVER['HTTP_USER_AGENT'] ?? '', 'facebookexternalhit') !== false ||
+  stripos($_SERVER['HTTP_USER_AGENT'] ?? '', 'Facebot') !== false
+);
 
-$mlszData = load_mlsz_data($mlszSourceUrl, $mlszCacheFile, $mlszTeamName, $mlszCacheTtl);
+if ($isFacebookCrawler) {
+  @file_put_contents(
+    __DIR__ . '/fb-crawler-log.txt',
+    date('Y-m-d H:i:s') .
+    ' | IP: ' . ($_SERVER['REMOTE_ADDR'] ?? '-') .
+    ' | UA: ' . ($_SERVER['HTTP_USER_AGENT'] ?? '-') .
+    ' | URI: ' . ($_SERVER['REQUEST_URI'] ?? '-') .
+    PHP_EOL,
+    FILE_APPEND
+  );
+}
+
+$mlszData = $isFacebookCrawler
+  ? ['matches' => [], 'standings' => [], 'next_match' => null]
+  : load_mlsz_data($mlszSourceUrl, $mlszCacheFile, $mlszTeamName, $mlszCacheTtl);
+
 if (!empty($mlszData['matches'])) {
   $site['matches'] = $mlszData['matches'];
 }
@@ -345,12 +364,11 @@ $nextMatch = $site['matches'][0] ?? null;
 if (!empty($mlszData['next_match'])) {
   $nextMatch = $mlszData['next_match'];
 }
+
 $documents = load_documents($documentsDir, $documentsPath);
+
 $canonicalHost = 'tiszaszalkase.com';
-$path = strtok($_SERVER['REQUEST_URI'] ?? '/index.php', '?') ?: '/index.php';
-$pageUrl = 'https://' . $canonicalHost . '/index.php';
-$basePath = rtrim(str_replace('\\', '/', dirname($path)), '/');
-$basePath = ($basePath === '' || $basePath === '.') ? '' : $basePath;
+$pageUrl = 'https://' . $canonicalHost . '/';
 $ogImage = 'https://' . $canonicalHost . '/og-image.jpg';
 $selectedNewsNumber = isset($_GET['hir']) ? max(1, (int) $_GET['hir']) : 0;
 $selectedNewsIndex = $selectedNewsNumber > 0 ? $selectedNewsNumber - 1 : null;
