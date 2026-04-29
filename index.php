@@ -337,18 +337,6 @@ $isFacebookCrawler = (
   stripos($_SERVER['HTTP_USER_AGENT'] ?? '', 'Facebot') !== false
 );
 
-if ($isFacebookCrawler) {
-  @file_put_contents(
-    __DIR__ . '/fb-crawler-log.txt',
-    date('Y-m-d H:i:s') .
-    ' | IP: ' . ($_SERVER['REMOTE_ADDR'] ?? '-') .
-    ' | UA: ' . ($_SERVER['HTTP_USER_AGENT'] ?? '-') .
-    ' | URI: ' . ($_SERVER['REQUEST_URI'] ?? '-') .
-    PHP_EOL,
-    FILE_APPEND
-  );
-}
-
 $mlszData = $isFacebookCrawler
   ? ['matches' => [], 'standings' => [], 'next_match' => null]
   : load_mlsz_data($mlszSourceUrl, $mlszCacheFile, $mlszTeamName, $mlszCacheTtl);
