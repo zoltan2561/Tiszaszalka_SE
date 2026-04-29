@@ -41,6 +41,31 @@ function excerpt(string $value, int $length = 150): string
   return $text;
 }
 
+function news_share_url(string $pageUrl, int $newsNumber): string
+{
+  return $pageUrl . '?hir=' . $newsNumber;
+}
+
+function facebook_share_url(string $newsUrl): string
+{
+  return 'https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode($newsUrl);
+}
+
+function article_published_time(string $date): string
+{
+  $date = trim($date);
+  if ($date === '') {
+    return '';
+  }
+
+  $published = DateTimeImmutable::createFromFormat('!Y.m.d.', $date, new DateTimeZone('Europe/Budapest'));
+  if (!$published) {
+    return '';
+  }
+
+  return $published->format(DATE_ATOM);
+}
+
 function format_file_size(int $bytes): string
 {
   if ($bytes >= 1048576) {
@@ -328,14 +353,23 @@ $basePath = rtrim(str_replace('\\', '/', dirname($path)), '/');
 $basePath = ($basePath === '' || $basePath === '.') ? '' : $basePath;
 $ogImage = 'https://' . $canonicalHost . $basePath . '/assets/img/og-image.jpg';
 $selectedNewsNumber = isset($_GET['hir']) ? max(1, (int) $_GET['hir']) : 0;
-$currentUrl = $pageUrl;
+$selectedNewsIndex = $selectedNewsNumber > 0 ? $selectedNewsNumber - 1 : null;
+$currentUrl = $selectedNewsNumber > 0 ? news_share_url($pageUrl, $selectedNewsNumber) : $pageUrl;
 $metaTitle = 'Tiszaszalka SE';
 $metaDescription = 'Tiszaszalka SE falusi focicsapat hivatalos weboldala.';
 $metaType = 'website';
-$shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode($currentUrl);
+$articlePublishedTime = '';
+
+if ($selectedNewsIndex !== null && isset($site['news'][$selectedNewsIndex])) {
+  $selectedNews = $site['news'][$selectedNewsIndex];
+  $metaTitle = (string) ($selectedNews['title'] ?? 'Hír');
+  $metaDescription = excerpt((string) ($selectedNews['body'] ?? $metaDescription));
+  $metaType = 'article';
+  $articlePublishedTime = article_published_time((string) ($selectedNews['date'] ?? ''));
+}
 ?>
 <!doctype html>
-<html lang="hu">
+<html lang="hu" prefix="og: https://ogp.me/ns# article: https://ogp.me/ns/article#">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -360,6 +394,12 @@ $shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode($curr
   <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
+  <?php if ($metaType === 'article'): ?>
+  <meta property="article:section" content="Hirek">
+  <?php if ($articlePublishedTime !== ''): ?>
+  <meta property="article:published_time" content="<?php echo e($articlePublishedTime); ?>">
+  <?php endif; ?>
+  <?php endif; ?>
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="<?php echo e($metaTitle); ?>">
   <meta name="twitter:description" content="<?php echo e($metaDescription); ?>">
@@ -421,6 +461,8 @@ $shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode($curr
             <?php
               $newsNumber = $index + 1;
               $newsId = 'hir-' . $newsNumber;
+              $newsUrl = news_share_url($pageUrl, $newsNumber);
+              $shareUrl = facebook_share_url($newsUrl);
             ?>
             <article id="<?php echo e($newsId); ?>" class="card<?php echo $selectedNewsNumber === $newsNumber ? ' selected-news' : ''; ?>">
               <span class="date"><?php echo e($news['date'] ?? ''); ?></span>
@@ -440,6 +482,8 @@ $shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode($curr
           <?php foreach ($fallbackNews as $item): ?>
             <?php
               $newsNumber = (int) str_replace('hir-', '', $item['id']);
+              $newsUrl = news_share_url($pageUrl, $newsNumber);
+              $shareUrl = facebook_share_url($newsUrl);
             ?>
             <article id="<?php echo e($item['id']); ?>" class="card<?php echo $selectedNewsNumber === $newsNumber ? ' selected-news' : ''; ?>">
               <span class="date">Hamarosan</span>
