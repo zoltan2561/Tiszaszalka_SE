@@ -1,4 +1,9 @@
 User-agent: *
 Allow: /
 
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: meta-externalagent
+Allow: /
 Sitemap: https://tiszaszalkase.com/sitemap.xml
