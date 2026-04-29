@@ -41,6 +41,26 @@ function excerpt(string $value, int $length = 150): string
   return $text;
 }
 
+function news_share_url(string $pageUrl, int $newsNumber): string
+{
+  return $pageUrl . '?hir=' . $newsNumber;
+}
+
+function article_published_time(string $date): string
+{
+  $date = trim($date);
+  if ($date === '') {
+    return '';
+  }
+
+  $published = DateTimeImmutable::createFromFormat('!Y.m.d.', $date, new DateTimeZone('Europe/Budapest'));
+  if (!$published) {
+    return '';
+  }
+
+  return $published->format(DATE_ATOM);
+}
+
 function format_file_size(int $bytes): string
 {
   if ($bytes >= 1048576) {
@@ -321,23 +341,28 @@ if (!empty($mlszData['next_match'])) {
   $nextMatch = $mlszData['next_match'];
 }
 $documents = load_documents($documentsDir, $documentsPath);
+$canonicalHost = 'tiszaszalkase.com';
 $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $path = strtok($_SERVER['REQUEST_URI'] ?? '/index.php', '?') ?: '/index.php';
-$pageUrl = $scheme . '://' . $host . $path;
+$pageUrl = 'https://' . $canonicalHost . $path;
 $basePath = rtrim(str_replace('\\', '/', dirname($path)), '/');
 $basePath = ($basePath === '' || $basePath === '.') ? '' : $basePath;
-$ogImage = $scheme . '://' . $host . $basePath . '/assets/img/tiszaszalka-se-logo.jpg';
+$ogImage = 'https://' . $canonicalHost . $basePath . '/assets/img/tiszaszalka-se-logo.jpg';
 $selectedNewsNumber = isset($_GET['hir']) ? max(1, (int) $_GET['hir']) : 0;
 $selectedNewsIndex = $selectedNewsNumber > 0 ? $selectedNewsNumber - 1 : null;
-$currentUrl = $selectedNewsNumber > 0 ? $pageUrl . '?hir=' . $selectedNewsNumber : $pageUrl;
+$currentUrl = $selectedNewsNumber > 0 ? news_share_url($pageUrl, $selectedNewsNumber) : $pageUrl;
 $metaTitle = 'Tiszaszalka SE';
 $metaDescription = 'Tiszaszalka SE falusi focicsapat hivatalos weboldala.';
+$metaType = 'website';
+$articlePublishedTime = '';
 
 if ($selectedNewsIndex !== null && isset($site['news'][$selectedNewsIndex])) {
   $selectedNews = $site['news'][$selectedNewsIndex];
   $metaTitle = (string) ($selectedNews['title'] ?? 'Hír');
   $metaDescription = excerpt((string) ($selectedNews['body'] ?? $metaDescription));
+  $metaType = 'article';
+  $articlePublishedTime = article_published_time((string) ($selectedNews['date'] ?? ''));
 }
 ?>
 <!doctype html>
@@ -348,7 +373,7 @@ if ($selectedNewsIndex !== null && isset($site['news'][$selectedNewsIndex])) {
   <title><?php echo e($metaTitle); ?></title>
   <meta name="description" content="<?php echo e($metaDescription); ?>">
   <link rel="canonical" href="<?php echo e($currentUrl); ?>">
-  <meta property="og:type" content="website">
+  <meta property="og:type" content="<?php echo e($metaType); ?>">
   <meta property="og:locale" content="hu_HU">
   <meta property="og:site_name" content="Tiszaszalka SE">
   <meta property="og:title" content="<?php echo e($metaTitle); ?>">
@@ -359,6 +384,12 @@ if ($selectedNewsIndex !== null && isset($site['news'][$selectedNewsIndex])) {
   <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="1280">
   <meta property="og:image:height" content="720">
+  <?php if ($metaType === 'article'): ?>
+  <meta property="article:section" content="Hirek">
+  <?php if ($articlePublishedTime !== ''): ?>
+  <meta property="article:published_time" content="<?php echo e($articlePublishedTime); ?>">
+  <?php endif; ?>
+  <?php endif; ?>
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="<?php echo e($metaTitle); ?>">
   <meta name="twitter:description" content="<?php echo e($metaDescription); ?>">
@@ -420,7 +451,7 @@ if ($selectedNewsIndex !== null && isset($site['news'][$selectedNewsIndex])) {
             <?php
               $newsNumber = $index + 1;
               $newsId = 'hir-' . $newsNumber;
-              $newsUrl = $pageUrl . '?hir=' . $newsNumber;
+              $newsUrl = news_share_url($pageUrl, $newsNumber);
               $shareUrl = 'https://www.facebook.com/sharer.php?u=' . rawurlencode($newsUrl);
             ?>
             <article id="<?php echo e($newsId); ?>" class="card<?php echo $selectedNewsNumber === $newsNumber ? ' selected-news' : ''; ?>">
@@ -441,7 +472,7 @@ if ($selectedNewsIndex !== null && isset($site['news'][$selectedNewsIndex])) {
           <?php foreach ($fallbackNews as $item): ?>
             <?php
               $newsNumber = (int) str_replace('hir-', '', $item['id']);
-              $newsUrl = $pageUrl . '?hir=' . $newsNumber;
+              $newsUrl = news_share_url($pageUrl, $newsNumber);
               $shareUrl = 'https://www.facebook.com/sharer.php?u=' . rawurlencode($newsUrl);
             ?>
             <article id="<?php echo e($item['id']); ?>" class="card<?php echo $selectedNewsNumber === $newsNumber ? ' selected-news' : ''; ?>">
