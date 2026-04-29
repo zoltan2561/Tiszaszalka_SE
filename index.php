@@ -326,7 +326,7 @@ $path = strtok($_SERVER['REQUEST_URI'] ?? '/index.php', '?') ?: '/index.php';
 $pageUrl = 'https://' . $canonicalHost . '/index.php';
 $basePath = rtrim(str_replace('\\', '/', dirname($path)), '/');
 $basePath = ($basePath === '' || $basePath === '.') ? '' : $basePath;
-$ogImage = 'https://' . $canonicalHost . $basePath . '/assets/img/tiszaszalka-se-logo.jpg';
+$ogImage = 'https://' . $canonicalHost . $basePath . '/assets/img/tiszaszalka-se-crest.jpg';
 $selectedNewsNumber = isset($_GET['hir']) ? max(1, (int) $_GET['hir']) : 0;
 $currentUrl = $pageUrl;
 $metaTitle = 'Tiszaszalka SE';
@@ -356,10 +356,10 @@ $shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode($curr
   <meta property="og:image" content="<?php echo e($ogImage); ?>">
   <meta property="og:image:url" content="<?php echo e($ogImage); ?>">
   <meta property="og:image:secure_url" content="<?php echo e($ogImage); ?>">
-  <meta property="og:image:alt" content="Tiszaszalka SE logo">
+  <meta property="og:image:alt" content="Tiszaszalka SE cimer">
   <meta property="og:image:type" content="image/jpeg">
-  <meta property="og:image:width" content="1280">
-  <meta property="og:image:height" content="720">
+  <meta property="og:image:width" content="340">
+  <meta property="og:image:height" content="430">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="<?php echo e($metaTitle); ?>">
   <meta name="twitter:description" content="<?php echo e($metaDescription); ?>">
