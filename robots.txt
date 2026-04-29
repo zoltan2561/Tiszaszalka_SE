@@ -1,14 +1,4 @@
-User-agent: facebookexternalhit
-Allow: /
-
-User-agent: Facebot
-Allow: /
-
-User-agent: Meta-ExternalAgent
-Allow: /
-
-User-agent: Meta-ExternalFetcher
-Allow: /
-
 User-agent: *
 Allow: /
+
+Sitemap: https://tiszaszalkase.com/sitemap.xml

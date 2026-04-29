@@ -1,21 +1,19 @@
-Options -Indexes
-DirectoryIndex index.php
-
-<IfModule mod_setenvif.c>
-  SetEnvIfNoCase User-Agent "facebookexternalhit" meta_bot=1
-  SetEnvIfNoCase User-Agent "Facebot" meta_bot=1
-  SetEnvIfNoCase User-Agent "Meta-ExternalAgent" meta_bot=1
-  SetEnvIfNoCase User-Agent "Meta-ExternalFetcher" meta_bot=1
-</IfModule>
-
 <IfModule mod_rewrite.c>
-  RewriteEngine On
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
 
-  RewriteCond %{HTTPS} !=on [OR]
-  RewriteCond %{HTTP_HOST} !^tiszaszalkase\.com$ [NC]
-  RewriteRule ^ https://tiszaszalkase.com%{REQUEST_URI} [R=301,L]
-</IfModule>
+    RewriteEngine On
 
-<IfModule mod_authz_core.c>
-  Require all granted
+    RewriteCond %{HTTPS} !=on [OR]
+    RewriteCond %{HTTP_HOST} !^tiszaszalkase\.com$ [NC]
+    RewriteRule ^ https://tiszaszalkase.com%{REQUEST_URI} [L,R=301]
+
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
 </IfModule>
