@@ -1,0 +1,19 @@
+Options -Indexes
+
+<IfModule mod_setenvif.c>
+  SetEnvIfNoCase User-Agent "facebookexternalhit" facebook_bot=1
+  SetEnvIfNoCase User-Agent "Facebot" facebook_bot=1
+</IfModule>
+
+<IfModule mod_authz_core.c>
+  <FilesMatch "^(index\.php|robots\.txt)$">
+    Require all granted
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  RewriteCond %{HTTP_USER_AGENT} "(facebookexternalhit|Facebot)" [NC]
+  RewriteRule ^ - [L]
+</IfModule>
