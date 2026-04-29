@@ -387,6 +387,7 @@ if ($selectedNewsIndex !== null && isset($site['news'][$selectedNewsIndex])) {
   <meta itemprop="name" content="<?php echo e($metaTitle); ?>">
   <meta itemprop="description" content="<?php echo e($metaDescription); ?>">
   <meta itemprop="image" content="<?php echo e($ogImage); ?>">
+  <link rel="image_src" href="<?php echo e($ogImage); ?>">
   <link rel="canonical" href="<?php echo e($currentUrl); ?>">
   <meta property="og:type" content="<?php echo e($metaType); ?>">
   <meta property="og:locale" content="hu_HU">
@@ -395,6 +396,7 @@ if ($selectedNewsIndex !== null && isset($site['news'][$selectedNewsIndex])) {
   <meta property="og:description" content="<?php echo e($metaDescription); ?>">
   <meta property="og:url" content="<?php echo e($currentUrl); ?>">
   <meta property="og:image" content="<?php echo e($ogImage); ?>">
+  <meta property="og:image:url" content="<?php echo e($ogImage); ?>">
   <meta property="og:image:secure_url" content="<?php echo e($ogImage); ?>">
   <meta property="og:image:alt" content="Tiszaszalka SE logo">
   <meta property="og:image:type" content="image/jpeg">
