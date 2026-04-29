@@ -46,6 +46,18 @@ function news_share_url(string $pageUrl, int $newsNumber): string
   return $pageUrl . '?hir=' . $newsNumber;
 }
 
+function facebook_share_url(string $newsUrl, string $title, string $description): string
+{
+  $quote = trim($title . "\n\n" . $description);
+  $shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode($newsUrl);
+
+  if ($quote !== '') {
+    $shareUrl .= '&quote=' . rawurlencode($quote);
+  }
+
+  return $shareUrl;
+}
+
 function article_published_time(string $date): string
 {
   $date = trim($date);
@@ -372,6 +384,9 @@ if ($selectedNewsIndex !== null && isset($site['news'][$selectedNewsIndex])) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?php echo e($metaTitle); ?></title>
   <meta name="description" content="<?php echo e($metaDescription); ?>">
+  <meta itemprop="name" content="<?php echo e($metaTitle); ?>">
+  <meta itemprop="description" content="<?php echo e($metaDescription); ?>">
+  <meta itemprop="image" content="<?php echo e($ogImage); ?>">
   <link rel="canonical" href="<?php echo e($currentUrl); ?>">
   <meta property="og:type" content="<?php echo e($metaType); ?>">
   <meta property="og:locale" content="hu_HU">
@@ -381,6 +396,7 @@ if ($selectedNewsIndex !== null && isset($site['news'][$selectedNewsIndex])) {
   <meta property="og:url" content="<?php echo e($currentUrl); ?>">
   <meta property="og:image" content="<?php echo e($ogImage); ?>">
   <meta property="og:image:secure_url" content="<?php echo e($ogImage); ?>">
+  <meta property="og:image:alt" content="Tiszaszalka SE logo">
   <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="1280">
   <meta property="og:image:height" content="720">
@@ -452,7 +468,11 @@ if ($selectedNewsIndex !== null && isset($site['news'][$selectedNewsIndex])) {
               $newsNumber = $index + 1;
               $newsId = 'hir-' . $newsNumber;
               $newsUrl = news_share_url($pageUrl, $newsNumber);
-              $shareUrl = 'https://www.facebook.com/sharer.php?u=' . rawurlencode($newsUrl);
+              $shareUrl = facebook_share_url(
+                $newsUrl,
+                (string) ($news['title'] ?? ''),
+                excerpt((string) ($news['body'] ?? ''))
+              );
             ?>
             <article id="<?php echo e($newsId); ?>" class="card<?php echo $selectedNewsNumber === $newsNumber ? ' selected-news' : ''; ?>">
               <span class="date"><?php echo e($news['date'] ?? ''); ?></span>
@@ -473,7 +493,7 @@ if ($selectedNewsIndex !== null && isset($site['news'][$selectedNewsIndex])) {
             <?php
               $newsNumber = (int) str_replace('hir-', '', $item['id']);
               $newsUrl = news_share_url($pageUrl, $newsNumber);
-              $shareUrl = 'https://www.facebook.com/sharer.php?u=' . rawurlencode($newsUrl);
+              $shareUrl = facebook_share_url($newsUrl, (string) $item['title'], excerpt((string) $item['body']));
             ?>
             <article id="<?php echo e($item['id']); ?>" class="card<?php echo $selectedNewsNumber === $newsNumber ? ' selected-news' : ''; ?>">
               <span class="date">Hamarosan</span>
