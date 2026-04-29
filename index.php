@@ -375,25 +375,26 @@ if ($selectedNewsIndex !== null && isset($site['news'][$selectedNewsIndex])) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?php echo e($metaTitle); ?></title>
   <meta name="description" content="<?php echo e($metaDescription); ?>">
-  <meta itemprop="name" content="<?php echo e($metaTitle); ?>">
-  <meta itemprop="description" content="<?php echo e($metaDescription); ?>">
-  <meta itemprop="image" content="<?php echo e($ogImage); ?>">
-  <link rel="image_src" href="<?php echo e($ogImage); ?>">
+  <meta name="robots" content="index, follow, max-image-preview:large">
   <link rel="canonical" href="<?php echo e($currentUrl); ?>">
-  <meta property="og:type" content="<?php echo e($metaType); ?>">
-  <meta property="og:locale" content="hu_HU">
-  <meta property="og:site_name" content="Tiszaszalka SE">
-  <meta property="og:logo" content="<?php echo e($ogImage); ?>">
+
   <meta property="og:title" content="<?php echo e($metaTitle); ?>">
   <meta property="og:description" content="<?php echo e($metaDescription); ?>">
-  <meta property="og:url" content="<?php echo e($currentUrl); ?>">
   <meta property="og:image" content="<?php echo e($ogImage); ?>">
-  <meta property="og:image:url" content="<?php echo e($ogImage); ?>">
   <meta property="og:image:secure_url" content="<?php echo e($ogImage); ?>">
   <meta property="og:image:alt" content="Tiszaszalka SE cimer">
   <meta property="og:image:type" content="image/jpeg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
+  <meta property="og:type" content="<?php echo e($metaType); ?>">
+  <meta property="og:url" content="<?php echo e($currentUrl); ?>">
+  <meta property="og:site_name" content="Tiszaszalka SE">
+  <meta property="og:locale" content="hu_HU">
+  <meta property="og:logo" content="<?php echo e($ogImage); ?>">
+  <meta itemprop="name" content="<?php echo e($metaTitle); ?>">
+  <meta itemprop="description" content="<?php echo e($metaDescription); ?>">
+  <meta itemprop="image" content="<?php echo e($ogImage); ?>">
+  <link rel="image_src" href="<?php echo e($ogImage); ?>">
   <?php if ($metaType === 'article'): ?>
   <meta property="article:section" content="Hirek">
   <?php if ($articlePublishedTime !== ''): ?>
@@ -404,6 +405,7 @@ if ($selectedNewsIndex !== null && isset($site['news'][$selectedNewsIndex])) {
   <meta name="twitter:title" content="<?php echo e($metaTitle); ?>">
   <meta name="twitter:description" content="<?php echo e($metaDescription); ?>">
   <meta name="twitter:image" content="<?php echo e($ogImage); ?>">
+  <meta name="twitter:image:alt" content="Tiszaszalka SE cimer">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
