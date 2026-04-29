@@ -356,7 +356,7 @@ $selectedNewsNumber = isset($_GET['hir']) ? max(1, (int) $_GET['hir']) : 0;
 $selectedNewsIndex = $selectedNewsNumber > 0 ? $selectedNewsNumber - 1 : null;
 $currentUrl = $selectedNewsNumber > 0 ? news_share_url($pageUrl, $selectedNewsNumber) : $pageUrl;
 $metaTitle = 'Tiszaszalka SE';
-$metaDescription = 'Tiszaszalka SE falusi focicsapat hivatalos weboldala.';
+$metaDescription = 'Tiszaszalka SE focicsapat hivatalos weboldala.';
 $metaType = 'website';
 $articlePublishedTime = '';
 
