@@ -351,7 +351,7 @@ $path = strtok($_SERVER['REQUEST_URI'] ?? '/index.php', '?') ?: '/index.php';
 $pageUrl = 'https://' . $canonicalHost . '/index.php';
 $basePath = rtrim(str_replace('\\', '/', dirname($path)), '/');
 $basePath = ($basePath === '' || $basePath === '.') ? '' : $basePath;
-$ogImage = 'https://' . $canonicalHost . $basePath . '/assets/img/og-image.jpg';
+$ogImage = 'https://' . $canonicalHost . '/og-image.jpg';
 $selectedNewsNumber = isset($_GET['hir']) ? max(1, (int) $_GET['hir']) : 0;
 $selectedNewsIndex = $selectedNewsNumber > 0 ? $selectedNewsNumber - 1 : null;
 $currentUrl = $selectedNewsNumber > 0 ? news_share_url($pageUrl, $selectedNewsNumber) : $pageUrl;
