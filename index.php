@@ -349,6 +349,7 @@ $shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' . rawurlencode($curr
   <meta property="og:type" content="<?php echo e($metaType); ?>">
   <meta property="og:locale" content="hu_HU">
   <meta property="og:site_name" content="Tiszaszalka SE">
+  <meta property="og:logo" content="<?php echo e($ogImage); ?>">
   <meta property="og:title" content="<?php echo e($metaTitle); ?>">
   <meta property="og:description" content="<?php echo e($metaDescription); ?>">
   <meta property="og:url" content="<?php echo e($currentUrl); ?>">
