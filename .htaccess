@@ -16,4 +16,8 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+
+    RewriteCond %{HTTP_USER_AGENT} facebookexternalhit [NC,OR]
+    RewriteCond %{HTTP_USER_AGENT} Facebot [NC]
+    RewriteRule ^ - [L]
 </IfModule>
