@@ -1,6 +1,13 @@
 Options -Indexes
 DirectoryIndex index.php
 
+<IfModule mod_setenvif.c>
+  SetEnvIfNoCase User-Agent "facebookexternalhit" meta_bot=1
+  SetEnvIfNoCase User-Agent "Facebot" meta_bot=1
+  SetEnvIfNoCase User-Agent "Meta-ExternalAgent" meta_bot=1
+  SetEnvIfNoCase User-Agent "Meta-ExternalFetcher" meta_bot=1
+</IfModule>
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
 

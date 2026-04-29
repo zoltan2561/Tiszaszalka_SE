@@ -6,7 +6,7 @@ $site = [
   'standings' => [],
   'gallery' => [],
   'contact' => [
-    'email' => 'info@tiszaszalkase.hu',
+    'email' => 'info@tiszaszalkase.com',
     'phone' => '+36 -- --- ----',
   ],
 ];
